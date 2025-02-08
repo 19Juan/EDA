@@ -3,6 +3,7 @@ from sqlalchemy import create_engine
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import math
 
 # load the .env file variables
 load_dotenv()
@@ -13,8 +14,7 @@ def db_connect():
     engine = create_engine(os.getenv('DATABASE_URL'))
     engine.connect()
     return engine
-
-#Para ver qué columnas son categóricas
+#Para ver qué variables son categóricas 
 def columnas_categoricas(df, lista_num_cat=[]):
     columnas_categoricas = []
     for column in df.columns:
@@ -23,7 +23,7 @@ def columnas_categoricas(df, lista_num_cat=[]):
     if len(lista_num_cat)>0:
         columnas_categoricas.extend(lista_num_cat)
     return columnas_categoricas
-#Para hacer el análisis categórico categórico
+#Para hacer el análisis categórico_categórico
 def analisis_categorico_categorico(df,lista_num_cat=[]):
     col_cat = columnas_categoricas(df,lista_num_cat)
     largo = len(col_cat)
@@ -56,16 +56,18 @@ def columnas_numericas(df,columnas_excluidas=[]):
 #Para hacer el análisis numérico numérico
 def analisis_numerico_numerico(df,y,columnas_excluidas=[],limites=[]):
     col_num = columnas_numericas(df,columnas_excluidas)
-    if df[y].dtype in ['int64','float64']:
+    if df[y].dtype not in ['int64','float64']:
         col_num.remove(y)
     largo = len(col_num)
     parte_entera = (largo//2)*2
     resto = largo%4
-    parte_entera +=1
+    parte_entera +=2
     if resto == 0:
-        parte_entera-=1
-    num_de_gridspec = int(parte_entera/2)
+        parte_entera-=2
+    num_de_gridspec = math.ceil(parte_entera/2)
     lista_hr = [5,1]*num_de_gridspec
+    print(parte_entera)
+    print(lista_hr)
     fig, axis = plt.subplots(parte_entera,2,figsize=(10,10),gridspec_kw={"height_ratios":lista_hr})
 
     for column in col_num:
@@ -74,31 +76,16 @@ def analisis_numerico_numerico(df,y,columnas_excluidas=[],limites=[]):
         if len(limites)>0:
             if 0<= col_num.index(column)*2 < len(limites):
                 if limites[col_num.index(column)*2] != None:
-                    sns.histplot(ax=axis[fila,columna],data=df,x='price').set(xlim=(limites[col_num.index(column)*2],limites[col_num.index(column)*2+1]),title=column)
-                    sns.boxplot(ax=axis[fila+1,columna],data=df,x='price').set(xlim=(limites[col_num.index(column)*2],limites[col_num.index(column)*2+1]))
+                    sns.histplot(ax=axis[fila,columna],data=df,x=column).set(xlim=(limites[col_num.index(column)*2],limites[col_num.index(column)*2+1]))
+                    sns.boxplot(ax=axis[fila+1,columna],data=df,x=column).set(xlim=(limites[col_num.index(column)*2],limites[col_num.index(column)*2+1]))
                 else:
-                    sns.histplot(ax=axis[fila,columna],data=df,x='price').set(title=column)
-                    sns.boxplot(ax=axis[fila+1,columna],data=df,x='price')
+                    sns.histplot(ax=axis[fila,columna],data=df,x=column)
+                    sns.boxplot(ax=axis[fila+1,columna],data=df,x=column)
             else:
-                sns.histplot(ax=axis[fila,columna],data=df,x='price').set(title=column)
-                sns.boxplot(ax=axis[fila+1,columna],data=df,x='price')
+                sns.histplot(ax=axis[fila,columna],data=df,x=column)
+                sns.boxplot(ax=axis[fila+1,columna],data=df,x=column)
         else:
-            sns.histplot(ax=axis[fila,columna],data=df,x='price').set(title=column)
-            sns.boxplot(ax=axis[fila+1,columna],data=df,x='price')
+            sns.histplot(ax=axis[fila,columna],data=df,x=column)
+            sns.boxplot(ax=axis[fila+1,columna],data=df,x=column)
     plt.tight_layout()
     plt.show()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
